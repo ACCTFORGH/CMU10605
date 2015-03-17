@@ -33,20 +33,18 @@ public class LR {
             labelsMap.put(allLabels[i], i);
         }
         docTokenizer = new DocTokenizer(vocabSize);
+		A = new int[labelsNum][vocabSize];  
+		B = new double[labelsNum][vocabSize];  
     }
 
     /**
      * Train memory efficient SGD Logistic regression model
      */
     public void train() throws IOException {
-		A = new int[labelsNum][vocabSize];  
-		B = new double[labelsNum][vocabSize];  
-		
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
         String doc = null;
         double learningRate = initLearningRate;
         Map<Integer, Integer> tokens;
-
         double regularTerm = 0;
         int k = 0;
 
@@ -63,7 +61,6 @@ public class LR {
                 // get labels and words
                 int tabPos = doc.indexOf("\t");
                 int[] labels = getLabels(doc.substring(0, tabPos));
-                //tokens = docTokenizer.defaultTokenizeDoc(doc.substring(tabPos + 1));
                 tokens = docTokenizer.tokenizeDoc(doc.substring(tabPos + 1));
 
                 // train classifers for all labels
@@ -92,14 +89,12 @@ public class LR {
 
     public void predict() throws IOException {
         BufferedReader br = new BufferedReader(new FileReader(testDataFileName));
-        BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(System.out));
         
         String doc = null;
         Map<Integer, Integer> tokens;
         while ((doc = br.readLine()) != null) {
             int tabPos = doc.indexOf("\t");
             int[] labels = getLabels(doc.substring(0, tabPos));
-            //tokens = docTokenizer.defaultTokenizeDoc(doc.substring(tabPos + 1));
             tokens = docTokenizer.tokenizeDoc(doc.substring(tabPos + 1));
             // compute score for each label
             // The first label
@@ -112,7 +107,6 @@ public class LR {
             }
             System.out.println();
         }
-
         br.close();
     }
 

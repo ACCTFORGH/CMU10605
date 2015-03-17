@@ -16,7 +16,6 @@ public class DocTokenizer {
         }
     }
 
-    // TODO: check if use List will get speedup
 	public Map<Integer, Integer> tokenizeDoc(String cur_doc) {
         Map<Integer, Integer> tokens = new HashMap<Integer, Integer>();
 		cur_doc = cur_doc.replace("_", " ");
