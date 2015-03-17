@@ -63,8 +63,8 @@ public class LR {
                 // get labels and words
                 int tabPos = doc.indexOf("\t");
                 int[] labels = getLabels(doc.substring(0, tabPos));
-                tokens = docTokenizer.defaultTokenizeDoc(doc.substring(tabPos + 1));
-                //tokens = docTokenizer.tokenizeDoc(doc.substring(tabPos + 1));
+                //tokens = docTokenizer.defaultTokenizeDoc(doc.substring(tabPos + 1));
+                tokens = docTokenizer.tokenizeDoc(doc.substring(tabPos + 1));
 
                 // train classifers for all labels
                 for (int i = 0; i < labelsNum; ++i) {
@@ -100,8 +100,8 @@ public class LR {
         while ((doc = br.readLine()) != null) {
             int tabPos = doc.indexOf(tabStr);
             int[] labels = getLabels(doc.substring(0, tabPos));
-            tokens = docTokenizer.defaultTokenizeDoc(doc.substring(tabPos + 1));
-            //tokens = docTokenizer.tokenizeDoc(doc.substring(tabPos + 1));
+            //tokens = docTokenizer.defaultTokenizeDoc(doc.substring(tabPos + 1));
+            tokens = docTokenizer.tokenizeDoc(doc.substring(tabPos + 1));
             // compute score for each label
             // The first label
             double score = getProb(B[0], tokens);
