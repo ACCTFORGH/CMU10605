@@ -96,31 +96,24 @@ public class LR {
         
         String doc = null;
         Map<Integer, Integer> tokens;
-        String tabStr = "\t";
         while ((doc = br.readLine()) != null) {
-            int tabPos = doc.indexOf(tabStr);
+            int tabPos = doc.indexOf("\t");
             int[] labels = getLabels(doc.substring(0, tabPos));
             //tokens = docTokenizer.defaultTokenizeDoc(doc.substring(tabPos + 1));
             tokens = docTokenizer.tokenizeDoc(doc.substring(tabPos + 1));
             // compute score for each label
             // The first label
             double score = getProb(B[0], tokens);
-            bw.append(allLabels[0]);
-            bw.append(tabStr);
-            bw.append(String.valueOf(score));
+            System.out.print(allLabels[0] + "\t" + String.valueOf(score));
             // remaining labels
             for (int i = 1; i < labelsNum; ++i) {
                 score = getProb(B[i], tokens);
-                bw.append(",");
-                bw.append(allLabels[i]);
-                bw.append(tabStr);
-                bw.append(String.valueOf(score));
+                System.out.print("," + allLabels[i] + "\t" + String.valueOf(score));
             }
-            bw.newLine();
+            System.out.println();
         }
 
         br.close();
-        bw.close();
     }
 
     private int[] getLabels(String labelStr) {
