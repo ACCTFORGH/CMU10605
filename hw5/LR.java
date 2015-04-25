@@ -1,3 +1,4 @@
+package hw5;
 import java.util.*;
 import java.io.*;
 
@@ -13,9 +14,9 @@ public class LR {
     String testDataFileName;
     int[][] A;  // the value of k last time B[j] was updated
     double[][] B;  // parameter
-    Map<String, Integer> labelsMap;
+    //Map<String, Integer> labelsMap;
     int labelsNum;
-    DocTokenizer docTokenizer;
+    Map<Integer, Integer> tokens;
 
     public LR(String[] args) {
         // parse arguments
@@ -27,14 +28,14 @@ public class LR {
 		testDataFileName = args[5];
 
         // put all possible labels into map
-        labelsMap = new HashMap<String, Integer>();
+        //labelsMap = new HashMap<String, Integer>();
         labelsNum = allLabels.length;
-        for (int i = 0; i < labelsNum; ++i) {
-            labelsMap.put(allLabels[i], i);
-        }
-        docTokenizer = new DocTokenizer(vocabSize);
+        //for (int i = 0; i < labelsNum; ++i) {
+            //labelsMap.put(allLabels[i], i);
+        //}
 		A = new int[labelsNum][vocabSize];  
 		B = new double[labelsNum][vocabSize];  
+        tokens = new HashMap<Integer, Integer>();
     }
 
     /**
@@ -44,7 +45,6 @@ public class LR {
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
         String doc = null;
         double learningRate = initLearningRate;
-        Map<Integer, Integer> tokens;
         double regularTerm = 0;
         int k = 0;
 
@@ -60,18 +60,24 @@ public class LR {
 
                 // get labels and words
                 int tabPos = doc.indexOf("\t");
-                int[] labels = getLabels(doc.substring(0, tabPos));
-                tokens = docTokenizer.tokenizeDoc(doc.substring(tabPos + 1));
+                //int[] labels = getLabels(doc.substring(0, tabPos));
+                String labelStr = doc.substring(0, tabPos);
+                defaultTokenizeDoc(doc.substring(tabPos + 1));
 
                 // train classifers for all labels
                 for (int i = 0; i < labelsNum; ++i) {
-                    double p = getProb(B[i], tokens);
+                    double p = getProb(B[i]);
                     
                     // update all non-zero features
                     for (Map.Entry<Integer, Integer> entry: tokens.entrySet()) {
                         int j = entry.getKey();
                         B[i][j] *= Math.pow(1 - regularTerm, k - A[i][j]);
-                        B[i][j] += learningRate * (labels[i] - p) * entry.getValue();
+                        if (labelStr.contains(allLabels[i])) {
+                            B[i][j] += learningRate * (1 - p) * entry.getValue();
+                        } else {
+                            B[i][j] += learningRate * (0 - p) * entry.getValue();
+                        }
+                        //B[i][j] += learningRate * (labels[i] - p) * entry.getValue();
                         A[i][j] = k;
                     }
                 }
@@ -91,18 +97,16 @@ public class LR {
         BufferedReader br = new BufferedReader(new FileReader(testDataFileName));
         
         String doc = null;
-        Map<Integer, Integer> tokens;
         while ((doc = br.readLine()) != null) {
             int tabPos = doc.indexOf("\t");
-            int[] labels = getLabels(doc.substring(0, tabPos));
-            tokens = docTokenizer.tokenizeDoc(doc.substring(tabPos + 1));
+            defaultTokenizeDoc(doc.substring(tabPos + 1));
             // compute score for each label
             // The first label
-            double score = getProb(B[0], tokens);
+            double score = getProb(B[0]);
             System.out.print(allLabels[0] + "\t" + String.valueOf(score));
             // remaining labels
             for (int i = 1; i < labelsNum; ++i) {
-                score = getProb(B[i], tokens);
+                score = getProb(B[i]);
                 System.out.print("," + allLabels[i] + "\t" + String.valueOf(score));
             }
             System.out.println();
@@ -110,6 +114,7 @@ public class LR {
         br.close();
     }
 
+    /*
     private int[] getLabels(String labelStr) {
         String[] docLabels = labelStr.split(",");
         int[] labels = new int[labelsNum];
@@ -118,9 +123,9 @@ public class LR {
         }
         return labels;
     }
+    */
 
-    private double getProb(double[] beta, 
-            Map<Integer, Integer> tokens) {
+    private double getProb(double[] beta) { 
         double score = 0;
         for (Map.Entry<Integer,Integer> entry: tokens.entrySet()) {
             score += entry.getValue() * beta[entry.getKey()];
@@ -136,6 +141,43 @@ public class LR {
 		return exp / (1 + exp);
     }
 
+    public void defaultTokenizeDoc(String cur_doc) {
+        //String[] words = cur_doc.split("\\s+");
+        String[] words = cur_doc.split(" ");
+        tokens.clear();
+        for (int i = 0; i < words.length; i++) {
+            //words[i] = words[i].replaceAll("\\W", "");
+            //if (words[i].length() > 0 && !hasDigit(words[i])) {
+            if (words[i].length() > 0) {
+                // covert each word to ID
+                int id = words[i].hashCode() % vocabSize;
+                if (id < 0) {
+                    id += vocabSize;
+                }
+
+                if (tokens.containsKey(id)) {
+                    tokens.put(id, tokens.get(id) + 1);
+                } else {
+                    tokens.put(id, 1);
+                }
+            }
+        }
+    }
+
+    /*
+	private static boolean hasDigit(String s) {
+		if (s == null || s.length() == 0) {
+			return false;
+		}
+		for (int i = 0; i < s.length(); ++i) {
+			if (Character.isDigit(s.charAt(i))) {
+				return true;
+			}
+		}
+		return false;
+	}
+    */
+
 	public static void main(String[] args) throws Exception {
 		// parse input arguments
 		if (args.length != 6) {
@@ -148,5 +190,4 @@ public class LR {
         lr.train();
         lr.predict();
 	}
-
 }
